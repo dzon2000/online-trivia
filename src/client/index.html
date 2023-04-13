@@ -12,11 +12,91 @@
 </head>
 
 <body>
-    <div class="container">
-        <div class="jumbotron">
-            <h1>res.sendFile() Works!</h1>
+    <div id="registerForm" class="jumbotron d-block">
+        <div class="container">
+            <h1 class="display-4">Welcome to Trivia!</h1>
+            <p class="lead">Please fill in the form below</p>
+            <hr class="my-4">
+            <form onsubmit="event.preventDefault();">
+                <div class="form-group">
+                    <label for="playerName">Name</label>
+                    <input type="text" class="form-control" id="playerName" aria-describedby="playerNameHelp"
+                        placeholder="Enter your name">
+                    <small id="playerNameHelp" class="form-text text-muted">Other players will see your name.</small>
+                </div>
+                <button type="submit" class="btn btn-primary" onclick="register(this.form)">Register</button>
+            </form>
         </div>
     </div>
+
+    <div id="lobby" class="jumbotron d-none">
+        <div class="container">
+            <h1 class="display-4">Lobby</h1>
+            <p class="lead">Wait for all players to join</p>
+            <hr class="my-4">
+            <ul id="playersList" class="list-group">
+
+            </ul>
+        </div>
+    </div>
+
+    <div id="question" class="jumbotron d-none">
+        <div class="container">
+            <h1 id="questionTitle" class="display-4"></h1>
+            <p id="questionContent" class="lead">Wait for all players to join</p>
+            <hr class="my-4">
+            <ul id="answerList" class="list-group">
+
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:3000/ws');
+        ws.onopen = (event) => {
+            ws.send(JSON.stringify({
+                action: "connect"
+            }));
+        };
+
+        ws.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            const listElement = document.getElementById("playersList");
+            if ("fetch" === message.action) {
+                let i = 0;
+                children = [];
+                [...message.data].forEach((player) => {
+                    const li = document.createElement("li");
+                    li.classList.add("list-group-item")
+                    if (i % 2 === 0) {
+                        li.classList.add("list-group-item-success")
+                    } else {
+                        li.classList.add("list-group-item-info")
+                    }
+                    const playerName = document.createTextNode(player.name);
+                    li.appendChild(playerName);
+
+                    children.push(li);
+                    i++;
+                });
+                listElement.replaceChildren(...children);
+            }
+        };
+
+        function register(form) {
+            ws.send(JSON.stringify({
+                name: form.playerName.value,
+                action: 'register',
+            }));
+            document.getElementById("registerForm").classList.add("d-none");
+            document.getElementById("registerForm").classList.remove("d-block");
+            document.getElementById("lobby").classList.add("d-block");
+            document.getElementById("lobby").classList.remove("d-none");
+            ws.send(JSON.stringify({
+                action: "fetch"
+            }));
+        }
+    </script>
 </body>
 
 </html>
