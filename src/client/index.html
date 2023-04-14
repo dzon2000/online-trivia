@@ -43,11 +43,11 @@
     <div id="question" class="jumbotron d-none">
         <div class="container">
             <h1 id="questionTitle" class="display-4"></h1>
-            <p id="questionContent" class="lead">Wait for all players to join</p>
+            <p id="questionContent" class="lead"></p>
             <hr class="my-4">
-            <ul id="answerList" class="list-group">
-
-            </ul>
+            <div id="answerList" class="list-group">
+                
+            </div>
         </div>
     </div>
 
@@ -80,6 +80,33 @@
                     i++;
                 });
                 listElement.replaceChildren(...children);
+            } else if ("start" === message.action) {
+                let i = 0;
+                children = [];
+                document.getElementById("lobby").classList.add("d-none");
+                document.getElementById("lobby").classList.remove("d-block");
+                document.getElementById("question").classList.add("d-block");
+                document.getElementById("question").classList.remove("d-none");
+
+                document.getElementById("questionTitle").innerText = `Question ${message.q.id}`;
+                document.getElementById("questionContent").innerText = message.q.q;
+                const listElement = document.getElementById("answerList");
+                for (answer of message.q.a) {
+                    const btn = document.createElement("button");
+                    btn.classList.add("btn", "btn-lg", "btn-block");
+                    btn.addEventListener('click', sendAnswer);
+                    if (i % 2 === 0) {
+                        btn.classList.add("btn-primary")
+                    } else {
+                        btn.classList.add("btn-success")
+                    }
+                    const playerName = document.createTextNode(answer);
+                    btn.appendChild(playerName);
+
+                    children.push(btn);
+                    i++;
+                }
+                listElement.replaceChildren(...children);
             }
         };
 
@@ -94,6 +121,17 @@
             document.getElementById("lobby").classList.remove("d-none");
             ws.send(JSON.stringify({
                 action: "fetch"
+            }));
+        }
+
+        async function start() {
+            const response = await fetch("/start");
+        }
+
+        function sendAnswer(event) {
+            ws.send(JSON.stringify({
+                action: "answer",
+                answer: event.target.innerText
             }));
         }
     </script>

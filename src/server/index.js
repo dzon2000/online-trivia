@@ -1,13 +1,43 @@
 const WebSocket = require('ws');
 
+const questions = [
+    {
+        id: 1,
+        q: "Whose role is to keep track of project plan?",
+        a: [
+            "Project Manager",
+            "Architect",
+            "Developer",
+            "Test Manager"
+        ],
+        c: "Project Manager",
+        f: true
+    },
+    {
+        id: 2,
+        q: "Should Architect code?",
+        a: [
+            "Yes",
+            "No",
+            "It depends",
+            "Never"
+        ],
+        c: "Yes",
+        f: true
+    }
+];
+
+
 const wss = new WebSocket.Server({ port: 3000 });
 const clients = new Map();
+
+var questionNum = 0;
 
 wss.on('connection', function connection(ws) {
     ws.on('error', console.error);
     const id = uuidv4();
     const score = 0;
-    const role = "participant"
+    const role = "none"
     const name = "John"
     const metadata = { id, score, role, name }
     clients.set(ws, metadata);
@@ -18,20 +48,18 @@ wss.on('connection', function connection(ws) {
         const client = clients.get(ws);
         if ("register" === message.action && message.name) {
             registerNewClient(client, message);
-        }
-        if ("fetch" === message.action) { // Fetch all clients for initial lobby list
-            const response = [];
-            [...clients.keys()].forEach((client) => {
-                if (client.readyState === client.OPEN) {
-                    response.push({
-                        name: clients.get(client).name
-                    })
-                }
-            });
-            sendAll({
-                action: "fetch",
-                data: response
-            });
+        } else if ("fetch" === message.action) { // Fetch all clients for initial lobby list
+            fetchAllClientsWaitingForTheGame();
+        } else if ("start" === message.action) { // Start the game
+            sendAll(
+                {
+                    action: "start", 
+                    q: questions[questionNum++ % 2]
+                });
+        } else if ("answer" === message.action) { // Got the answer
+            if (message.answer === questions[questionNum % 2].c) {
+                client.score += 1000;
+            }
         }
     });
     ws.send(JSON.stringify({
@@ -44,17 +72,30 @@ wss.on("close", () => {
     clients.delete(ws);
 });
 
-function registerNewClient(client, message) {
-    client.name = message.name;
-    message.id = client.id;
-    sendAll(message);
-    console.log("=======================");
+function fetchAllClientsWaitingForTheGame() {
+    const response = [];
     [...clients.keys()].forEach((client) => {
-        console.log(`${clients.get(client).name} : ${client.readyState}`);
+        const metadata = clients.get(client);
+        if (client.readyState === client.OPEN && metadata.role === 'participant') {
+            response.push({
+                name: metadata.name
+            });
+        }
+    });
+    sendAll({
+        action: "fetch",
+        data: response
     });
 }
 
-function sendAll(message) {
+function registerNewClient(client, message) {
+    client.name = message.name;
+    client.role = "participant";
+    message.id = client.id;
+    sendAll(message);
+}
+
+function sendAll(message) { // TODO: send only to active clients plus only for the specific game
     [...clients.keys()].forEach((client) => {
         client.send(JSON.stringify(message));
     });
