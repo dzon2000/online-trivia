@@ -17,20 +17,48 @@ wss.on('connection', function connection(ws) {
         const message = JSON.parse(data);
         const client = clients.get(ws);
         if ("register" === message.action && message.name) {
-            client.name = message.name;
-            message.id = client.id;
+            registerNewClient(client, message);
+        }
+        if ("fetch" === message.action) { // Fetch all clients for initial lobby list
+            const response = [];
             [...clients.keys()].forEach((client) => {
-                client.send(JSON.stringify(message));
+                if (client.readyState === client.OPEN) {
+                    response.push({
+                        name: clients.get(client).name
+                    })
+                }
             });
-            console.log(clients)
+            sendAll({
+                action: "fetch",
+                data: response
+            });
         }
     });
-    ws.send('Welcome!');
+    ws.send(JSON.stringify({
+        action: "greet",
+        message: "Welcome!"
+    }));
 });
 
 wss.on("close", () => {
     clients.delete(ws);
 });
+
+function registerNewClient(client, message) {
+    client.name = message.name;
+    message.id = client.id;
+    sendAll(message);
+    console.log("=======================");
+    [...clients.keys()].forEach((client) => {
+        console.log(`${clients.get(client).name} : ${client.readyState}`);
+    });
+}
+
+function sendAll(message) {
+    [...clients.keys()].forEach((client) => {
+        client.send(JSON.stringify(message));
+    });
+}
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
