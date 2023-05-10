@@ -5,6 +5,8 @@ ws.onopen = (event) => {
     }));
 };
 
+const 
+
 ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
     const listElement = document.getElementById("playersList");
@@ -27,46 +29,7 @@ ws.onmessage = (event) => {
         });
         listElement.replaceChildren(...children);
     } else if ("start" === message.action) {
-        let i = 0;
-        children = [];
-        document.getElementById("lobby").classList.add("d-none");
-        document.getElementById("lobby").classList.remove("d-block");
-        document.getElementById("question").classList.add("d-block");
-        document.getElementById("question").classList.remove("d-none");
-
-        document.getElementById("questionTitle").innerText = `Question ${message.q.id}`;
-        document.getElementById("questionContent").innerText = message.q.q;
-        const listElement = document.getElementById("answerList");
-        for (answer of message.q.a) {
-            const btn = document.createElement("button");
-            btn.classList.add("btn", "btn-lg", "btn-block");
-            btn.addEventListener('click', sendAnswer);
-            if (i % 2 === 0) {
-                btn.classList.add("btn-primary")
-            } else {
-                btn.classList.add("btn-success")
-            }
-            const playerName = document.createTextNode(answer);
-            btn.appendChild(playerName);
-
-            children.push(btn);
-            i++;
-        }
-        listElement.replaceChildren(...children);
-
-        let timer = document.getElementById("timer");
-        timer.innerText = "10.0";
-        gotAnswer = false;
-        const id = setInterval(function () {
-            let cur = timer.innerText;
-            if (cur - 0.1 < 0) {
-                timer.innerText = "Time's up!";
-                clearInterval(id);
-                sendAnswer({ target: { innerText: "-1" } });
-            } else {
-                timer.innerText = (cur - 0.1).toFixed(1);
-            }
-        }, 100);
+        displayQuestion(message);
     } else if ("feedback" === message.action) {
         document.getElementById("score").innerText = message.score;
     } else if ("rank" === message.action) {
@@ -95,6 +58,62 @@ ws.onmessage = (event) => {
         playersRank.replaceChildren(...children);
     }
 };
+
+function displayQuestion(message) {
+    let i = 0;
+    children = [];
+    hideElement("lobby");
+    
+    showElement("question");
+
+    document.getElementById("questionTitle").innerText = `Question ${message.q.id}`;
+    document.getElementById("questionContent").innerText = message.q.q;
+    const listElement = document.getElementById("answerList");
+    for (answer of message.q.a) {
+        const btn = document.createElement("button");
+        btn.classList.add("btn", "btn-lg", "btn-block");
+        btn.addEventListener('click', sendAnswer);
+        if (i % 2 === 0) {
+            btn.classList.add("btn-primary");
+        } else {
+            btn.classList.add("btn-success");
+        }
+        const playerName = document.createTextNode(answer);
+        btn.appendChild(playerName);
+
+        children.push(btn);
+        i++;
+    }
+    listElement.replaceChildren(...children);
+
+    let timer = document.getElementById("timer");
+    timer.innerText = "10.0";
+    gotAnswer = false;
+    const id = setInterval(function () {
+        let cur = timer.innerText;
+        if (cur - 0.1 < 0) {
+            timer.innerText = "Time's up!";
+            clearInterval(id);
+            sendAnswer({ target: { innerText: "-1" } });
+        } else {
+            timer.innerText = (cur - 0.1).toFixed(1);
+        }
+    }, 100);
+}
+
+function showElement() {
+    document.getElementById(elem).classList.add("d-block");
+    document.getElementById(elem).classList.remove("d-none");
+}
+
+function hideElement(elem) {
+    document.getElementById(elem).classList.add("d-none");
+    document.getElementById(elem).classList.remove("d-block");
+}
+
+function hideAllElementsBut(elem) {
+
+}
 
 function register(form) {
     ws.send(JSON.stringify({
