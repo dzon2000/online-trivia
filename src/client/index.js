@@ -13,7 +13,7 @@ ws.on('open', function open() {
 
 const app = express()
 const port = 8888
-app.use(express.json()); // barse body to JSON
+app.use(express.json()); // parse body to JSON
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'));
 })
