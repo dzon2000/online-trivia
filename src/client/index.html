@@ -78,18 +78,25 @@
             <h1 class="display-4">Get ready!</h1>
             <hr class="my-4">
             <div id="container">
-                <div id="counter" class="n">9</div>
+                <div id="counter" class="n">5</div>
             </div>
         </div>
     </div>
     <script>
-        setInterval(function() {
-            let dd = document.getElementById("counter");
-            let num = parseInt(dd.innerText);
+        function startTimer() {
+            let timer = setInterval(frame, 1000);
+            function frame() {
+                let dd = document.getElementById("counter");
+                let num = parseInt(dd.innerText) - 1;
 
-            dd.innerText = num - 1;
-        }, 1000)
-        
+                dd.innerText = num;
+                if (num === 0) {
+                    clearInterval(timer);
+                }
+            }
+        }
+        startTimer();
+
     </script>
 </body>
 
