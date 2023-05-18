@@ -5,7 +5,13 @@ ws.onopen = (event) => {
     }));
 };
 
-const 
+const jumbotrons = [
+    "registerForm",
+    "lobby",
+    "question",
+    "standing",
+    "countdown"
+]
 
 ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
@@ -29,15 +35,12 @@ ws.onmessage = (event) => {
         });
         listElement.replaceChildren(...children);
     } else if ("start" === message.action) {
-        displayQuestion(message);
+        hideAllElementsBut("countdown");
+        startTimer().then(param => displayQuestion(message));
     } else if ("feedback" === message.action) {
         document.getElementById("score").innerText = message.score;
     } else if ("rank" === message.action) {
-        document.getElementById("question").classList.add("d-none");
-        document.getElementById("question").classList.remove("d-block");
-        document.getElementById("standing").classList.add("d-block");
-        document.getElementById("standing").classList.remove("d-none");
-
+        hideAllElementsBut("standing");
         const playersRank = document.getElementById("playersRank");
         let i = 0;
         children = [];
@@ -62,10 +65,7 @@ ws.onmessage = (event) => {
 function displayQuestion(message) {
     let i = 0;
     children = [];
-    hideElement("lobby");
-    
-    showElement("question");
-
+    hideAllElementsBut("question");
     document.getElementById("questionTitle").innerText = `Question ${message.q.id}`;
     document.getElementById("questionContent").innerText = message.q.q;
     const listElement = document.getElementById("answerList");
@@ -94,14 +94,15 @@ function displayQuestion(message) {
         if (cur - 0.1 < 0) {
             timer.innerText = "Time's up!";
             clearInterval(id);
-            sendAnswer({ target: { innerText: "-1" } });
+            if (!gotAnswer)
+                sendAnswer({ target: { innerText: "-1" } });
         } else {
             timer.innerText = (cur - 0.1).toFixed(1);
         }
     }, 100);
 }
 
-function showElement() {
+function showElement(elem) {
     document.getElementById(elem).classList.add("d-block");
     document.getElementById(elem).classList.remove("d-none");
 }
@@ -112,7 +113,13 @@ function hideElement(elem) {
 }
 
 function hideAllElementsBut(elem) {
-
+    jumbotrons.forEach(j => {
+        if (j && j !== elem) {
+            console.log("Hiding elem...: " + j)
+            hideElement(j);
+        }
+    });
+    showElement(elem);
 }
 
 function register(form) {
@@ -120,10 +127,7 @@ function register(form) {
         name: form.playerName.value,
         action: 'register',
     }));
-    document.getElementById("registerForm").classList.add("d-none");
-    document.getElementById("registerForm").classList.remove("d-block");
-    document.getElementById("lobby").classList.add("d-block");
-    document.getElementById("lobby").classList.remove("d-none");
+    hideAllElementsBut("lobby");
     ws.send(JSON.stringify({
         action: "fetch"
     }));
@@ -139,10 +143,29 @@ function sendAnswer(event) {
         console.log("Ignoring second answer...");
         return;
     }
+    event.target.style.backgroundColor = "#c3c4e6";
     console.log("Sending answer...")
     gotAnswer = true;
     ws.send(JSON.stringify({
         action: "answer",
         answer: event.target.innerText
     }));
+}
+
+function startTimer() {
+    var defer = new Promise(resolve => {
+        let timer = setInterval(frame, 1000);
+        function frame() {
+            let dd = document.getElementById("counter");
+            let num = parseInt(dd.innerText) - 1;
+
+            dd.innerText = num;
+            if (num === 0) {
+                dd.innerText = 5;
+                clearInterval(timer);
+                resolve('done');
+            }
+        }
+    });
+    return defer;
 }

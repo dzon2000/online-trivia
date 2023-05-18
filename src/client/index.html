@@ -73,7 +73,7 @@
         </div>
     </div>
 
-    <div id="countdown" class="jumbotron">
+    <div id="countdown" class="jumbotron d-none">
         <div class="container">
             <h1 class="display-4">Get ready!</h1>
             <hr class="my-4">
@@ -82,22 +82,6 @@
             </div>
         </div>
     </div>
-    <script>
-        function startTimer() {
-            let timer = setInterval(frame, 1000);
-            function frame() {
-                let dd = document.getElementById("counter");
-                let num = parseInt(dd.innerText) - 1;
-
-                dd.innerText = num;
-                if (num === 0) {
-                    clearInterval(timer);
-                }
-            }
-        }
-        startTimer();
-
-    </script>
 </body>
 
 </html>
