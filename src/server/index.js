@@ -24,6 +24,50 @@ const questions = [
         ],
         c: "Yes",
         f: true
+    },
+    {
+        id: 3,
+        q: "What is the primary responsibility of a technical architect in software development?",
+        a: [
+            "Managing project timelines and budgets",
+            "Writing code for software applications",
+            "Designing and overseeing the overall architecture of a software system",
+            "Conducting user testing and quality assurance"
+        ],
+        c: "Designing and overseeing the overall architecture of a software system"
+    },
+    {
+        id: 4,
+        q: "Which of the following is a key skill required for a technical architect?",
+        a: [
+            "Graphic design",
+            "Database administration",
+            "Marketing strategy",
+            "Legal expertise"
+        ],
+        c: "Database administration"
+    },
+    {
+        id: 5,
+        q: `What does the term "scalability" refer to in software architecture?`,
+        a: [
+            "The ability of software to handle increased workload and user demand",
+            "The physical size of a software application's installation package",
+            "The speed at which a software application can perform tasks",
+            "The level of security provided by a software system"
+        ],
+        c: "The ability of software to handle increased workload and user demand"
+    },
+    {
+        id: 6,
+        q: `What is the purpose of a technical architecture diagram?`,
+        a: [
+            "To visualize the user interface design of a software application",
+            "To outline the marketing strategy for a software product",
+            "To document the technical infrastructure and components of a software system",
+            "To showcase the performance benchmarks of a software application"
+        ],
+        c: "To document the technical infrastructure and components of a software system"
     }
 ];
 
@@ -63,7 +107,7 @@ wss.on('connection', function connection(ws) {
             let playersCount = countPlayers();
             answersCount++;
             if (message.answer == questions[(questionNum - 1) % qLen].c) {
-                client.score += 1000;
+                client.score += Math.round((1000 * (parseFloat(message.time) / 10)));
                 ws.send(JSON.stringify({
                     action: "feedback",
                     score: client.score
@@ -147,5 +191,5 @@ function getRanking() {
             });
         }
     });
-    return response;
+    return response.sort((a, b) => b.score - a.score);
 }

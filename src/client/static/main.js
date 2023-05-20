@@ -139,6 +139,7 @@ async function start() {
 }
 
 function sendAnswer(event) {
+    let timer = document.getElementById("timer");
     if (gotAnswer === true) {
         console.log("Ignoring second answer...");
         return;
@@ -148,7 +149,8 @@ function sendAnswer(event) {
     gotAnswer = true;
     ws.send(JSON.stringify({
         action: "answer",
-        answer: event.target.innerText
+        answer: event.target.innerText,
+        time: timer.innerText
     }));
 }
 
