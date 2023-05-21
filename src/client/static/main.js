@@ -2,6 +2,7 @@ const ws = new WebSocket('ws://localhost:3000/ws');
 ws.onopen = (event) => {
     ws.send(JSON.stringify({
         action: "connect"
+        // TODO send client id here if it's set
     }));
 };
 
@@ -59,6 +60,9 @@ ws.onmessage = (event) => {
             i++;
         });
         playersRank.replaceChildren(...children);
+    } else if ("register" === message.action) {
+        console.log("Back from register: " + message.id);
+        document.cookie = `clientID=${message.id}`;
     }
 };
 
@@ -71,13 +75,13 @@ function displayQuestion(message) {
     const listElement = document.getElementById("answerList");
     for (answer of message.q.a) {
         const btn = document.createElement("button");
-        btn.classList.add("btn", "btn-lg", "btn-block");
+        btn.classList.add("list-group-item", "list-group-item-action");
         btn.addEventListener('click', sendAnswer);
-        if (i % 2 === 0) {
-            btn.classList.add("btn-primary");
-        } else {
-            btn.classList.add("btn-success");
-        }
+        // if (i % 2 === 0) {
+        //     btn.classList.add("btn-primary");
+        // } else {
+        //     btn.classList.add("btn-success");
+        // }
         const playerName = document.createTextNode(answer);
         btn.appendChild(playerName);
 
@@ -132,6 +136,7 @@ function register(form) {
         action: "fetch"
     }));
 }
+
 let gotAnswer = false;
 async function start() {
     gotAnswer = false;
@@ -144,7 +149,7 @@ function sendAnswer(event) {
         console.log("Ignoring second answer...");
         return;
     }
-    event.target.style.backgroundColor = "#c3c4e6";
+    event.target.classList.add("active");
     console.log("Sending answer...")
     gotAnswer = true;
     ws.send(JSON.stringify({

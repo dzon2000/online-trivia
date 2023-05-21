@@ -68,6 +68,17 @@ const questions = [
             "To showcase the performance benchmarks of a software application"
         ],
         c: "To document the technical infrastructure and components of a software system"
+    },
+    {
+        id: 7,
+        q: `In a software development project, what is the role of a technical architect in collaboration with other team members?`,
+        a: [
+            "Leading the project management and coordinating tasks",
+            "Creating the user interface and visual design elements",
+            "Ensuring effective communication and collaboration between team members",
+            "Conducting usability testing and gathering user feedback"
+        ],
+        c: "Ensuring effective communication and collaboration between team members"
     }
 ];
 
@@ -164,7 +175,7 @@ function registerNewClient(client, message) {
     client.name = message.name;
     client.role = "participant";
     message.id = client.id;
-    sendAll(message);
+    client.send(JSON.stringify(message));
 }
 
 function sendAll(message) { // TODO: send only to active clients plus only for the specific game
