@@ -1,0 +1,85 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:700");
+
+#container {
+    font-family: "Roboto", sans-serif;
+    width: 200px;
+    height: 200px;
+    perspective: 300px;
+}
+
+.n {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 200px;
+    height: 200px;
+    transform: rotateY(90deg);
+    text-align: center;
+    font-size: 200px;
+    line-height: 200px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.n:nth-of-type(1) {
+    -webkit-animation: animate_1 1s ease-in-out infinite;
+    animation: animate_1 1s ease-in-out infinite;
+}
+
+/* @-webkit-keyframes animate_1 {
+    0% {
+        transform: rotateY(90deg);
+    }
+
+    0% {
+        transform: rotateY(90deg);
+    }
+
+    5% {
+        transform: rotateY(0deg);
+    }
+
+    10% {
+        transform: rotateY(-90deg);
+    }
+
+    100% {
+        transform: rotateY(-90deg);
+    }
+} */
+
+@keyframes animate_1 {
+    0% {
+        transform: rotateY(90deg);
+    }
+
+    0% {
+        transform: rotateY(90deg);
+    }
+
+    50% {
+        transform: rotateY(0deg);
+    }
+
+    100% {
+        transform: rotateY(-90deg);
+    }
+
+    100% {
+        transform: rotateY(-90deg);
+    }
+}
+
+.question-left {
+    float: left;
+}
+
+.question-right {
+    float: right;
+}
+
+.question-title {
+    padding: 0;
+}

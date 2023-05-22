@@ -6,13 +6,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To Be Architect Trivia!</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <script src="main.js"></script>
 </head>
 
 <body>
-    <div id="registerForm" class="jumbotron d-block">
+    <div id="registerForm" class="jumbotron d-none">
         <div class="container">
             <h1 class="display-4">Welcome to Trivia!</h1>
             <p class="lead">Please fill in the form below</p>
@@ -41,62 +44,45 @@
     </div>
 
     <div id="question" class="jumbotron d-none">
+
         <div class="container">
-            <h1 id="questionTitle" class="display-4"></h1>
-            <p id="questionContent" class="lead">Wait for all players to join</p>
+            <span id="timer">10.0</span>
+            <div class="container question-title">
+                <div>
+                    <h1 id="questionTitle" class="display-4"></h1>
+                </div>
+                <div class="question-right">
+                    <h1>Score: <span id="score">0</span></h1>
+                </div>
+            </div>
+            <p id="questionContent" class="lead"></p>
             <hr class="my-4">
-            <ul id="answerList" class="list-group">
+            <div id="answerList" class="list-group">
+
+            </div>
+        </div>
+    </div>
+
+    <div id="standing" class="jumbotron d-none">
+        <div class="container">
+            <h1 class="display-4">Standings</h1>
+            <p class="lead">Here is the current ranking!</p>
+            <hr class="my-4">
+            <ul id="playersRank" class="list-group">
 
             </ul>
         </div>
     </div>
 
-    <script>
-        const ws = new WebSocket('ws://localhost:3000/ws');
-        ws.onopen = (event) => {
-            ws.send(JSON.stringify({
-                action: "connect"
-            }));
-        };
-
-        ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            const listElement = document.getElementById("playersList");
-            if ("fetch" === message.action) {
-                let i = 0;
-                children = [];
-                [...message.data].forEach((player) => {
-                    const li = document.createElement("li");
-                    li.classList.add("list-group-item")
-                    if (i % 2 === 0) {
-                        li.classList.add("list-group-item-success")
-                    } else {
-                        li.classList.add("list-group-item-info")
-                    }
-                    const playerName = document.createTextNode(player.name);
-                    li.appendChild(playerName);
-
-                    children.push(li);
-                    i++;
-                });
-                listElement.replaceChildren(...children);
-            }
-        };
-
-        function register(form) {
-            ws.send(JSON.stringify({
-                name: form.playerName.value,
-                action: 'register',
-            }));
-            document.getElementById("registerForm").classList.add("d-none");
-            document.getElementById("registerForm").classList.remove("d-block");
-            document.getElementById("lobby").classList.add("d-block");
-            document.getElementById("lobby").classList.remove("d-none");
-            ws.send(JSON.stringify({
-                action: "fetch"
-            }));
-        }
-    </script>
+    <div id="countdown" class="jumbotron d-none">
+        <div class="container">
+            <h1 class="display-4">Get ready!</h1>
+            <hr class="my-4">
+            <div id="container">
+                <div id="counter" class="n">5</div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
