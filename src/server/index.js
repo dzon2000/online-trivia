@@ -83,8 +83,6 @@ const questions = [
 ];
 
 const qLen = questions.length;
-
-
 const wss = new WebSocket.Server({ port: 3000 });
 const clients = new Map();
 
@@ -103,8 +101,30 @@ wss.on('connection', function connection(ws) {
         console.log(`Raw data: ${data}`);
         const message = JSON.parse(data);
         const client = clients.get(ws);
-        if ("register" === message.action && message.name) {
-            registerNewClient(client, message);
+        if ("connect" === message.action && message.clientID) {
+            console.log(`Got clientID=${message.clientID}`);
+            let foundExisting = false;
+            [...clients.keys()].forEach((client) => {
+                const metadata = clients.get(client);
+                if (metadata.id === message.clientID) {
+                    console.log(`Found existing client: ${JSON.stringify(metadata)}`)
+                    clients.set(ws, metadata);
+                    ws.send(JSON.stringify(
+                        {
+                            action: "rank", 
+                            rank: getRanking()
+                        }));
+                    foundExisting = true;
+                }
+            });
+            if (!foundExisting) {
+                ws.send(JSON.stringify({
+                    action: "greet",
+                    message: "Welcome!"
+                }));
+            }
+        } else if ("register" === message.action && message.name) {
+            registerNewClient(ws, client, message);
         } else if ("fetch" === message.action) { // Fetch all clients for initial lobby list
             fetchAllClientsWaitingForTheGame();
         } else if ("start" === message.action) { // Start the game
@@ -134,10 +154,6 @@ wss.on('connection', function connection(ws) {
             }
         }
     });
-    ws.send(JSON.stringify({
-        action: "greet",
-        message: "Welcome!"
-    }));
 });
 
 wss.on("close", () => {
@@ -171,11 +187,11 @@ function fetchAllClientsWaitingForTheGame() {
     });
 }
 
-function registerNewClient(client, message) {
+function registerNewClient(ws, client, message) {
     client.name = message.name;
     client.role = "participant";
     message.id = client.id;
-    client.send(JSON.stringify(message));
+    ws.send(JSON.stringify(message));
 }
 
 function sendAll(message) { // TODO: send only to active clients plus only for the specific game

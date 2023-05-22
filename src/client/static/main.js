@@ -1,8 +1,11 @@
 const ws = new WebSocket('ws://localhost:3000/ws');
 ws.onopen = (event) => {
+    let cookies = document.cookie;
+    let clientID = cookies.split('; ').find(cookie => cookie.startsWith('clientID=')).split('=')[1];
+    console.log(`Cookie value=${clientID}`)
     ws.send(JSON.stringify({
-        action: "connect"
-        // TODO send client id here if it's set
+        action: "connect",
+        clientID: clientID
     }));
 };
 
@@ -17,7 +20,9 @@ const jumbotrons = [
 ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
     const listElement = document.getElementById("playersList");
-    if ("fetch" === message.action) {
+    if ("greet" === message.action) {
+        hideAllElementsBut("registerForm")
+    } else if ("fetch" === message.action) {
         let i = 0;
         children = [];
         [...message.data].forEach((player) => {
